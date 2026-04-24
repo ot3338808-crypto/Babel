@@ -98,36 +98,33 @@
         const tg = window.Telegram.WebApp;
 
         // التحقق مما إذا كانت الصفحة مفتوحة داخل تليجرام
-        if (!tg.initData || tg.initData === "") {
-            document.body.innerHTML = `
-                <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; text-align:center; padding:40px; background:#121212;">
-                    <div style="font-size: 60px; margin-bottom: 20px;">🛡️</div>
-                    <h2 style="color:#ffffff; margin-bottom: 10px;">بيئة غير مدعومة</h2>
-                    <p style="color:#858585; max-width: 300px; line-height: 1.6;">عذراً، يجب فتح هذا المحرر من داخل بوت التليجرام لتتمكن من إرسال الحل وحساب نتيجتك.</p>
-                    <a href="https://t.me/your_bot_username" style="margin-top: 30px; background:#007acc; color:white; text-decoration:none; padding:10px 20px; border-radius:5px; font-weight:bold;">العودة للبوت</a>
-                </div>
-            `;
-        } else {
-            tg.expand();
+        // سنسمح بالدخول إذا كانت المنصة معروفة أو يوجد بيانات تعريف
+        const isTelegram = tg.initData !== "" || tg.platform !== 'unknown';
 
-            // إظهار اسم المستخدم إذا وجد لزيادة التخصيص
-            const user = tg.initDataUnsafe?.user;
-            if (user) {
-                document.querySelector('.header span:last-child').innerText = `👤 ${user.first_name}`;
+        if (!isTelegram) {
+            // سنسمح بالدخول للمعاينة ولكن مع تنبيه
+            console.warn("تنبيه: لا توجد بيانات تعريف من تليجرام.");
+        }
+
+        tg.expand();
+
+        // إظهار اسم المستخدم إذا وجد لزيادة التخصيص
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            document.querySelector('.header span:last-child').innerText = `👤 ${user.first_name}`;
+        }
+
+        document.getElementById('send-btn').addEventListener('click', () => {
+            const code = document.getElementById('code-editor').value;
+            if (code.trim() === "") {
+                // استخدام واجهة تليجرام للتنبيهات
+                tg.showAlert("يرجى كتابة الكود أولاً!");
+                return;
             }
 
-            document.getElementById('send-btn').addEventListener('click', () => {
-                const code = document.getElementById('code-editor').value;
-                if (code.trim() === "") {
-                    // استخدام واجهة تليجرام للتنبيهات
-                    tg.showAlert("يرجى كتابة الكود أولاً!");
-                    return;
-                }
-
-                // إرسال البيانات للبوت وإغلاق النافذة
-                tg.sendData(code);
-            });
-        }
+            // إرسال البيانات للبوت وإغلاق النافذة
+            tg.sendData(code);
+        });
     </script>
 </body>
 
